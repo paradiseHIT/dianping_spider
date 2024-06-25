@@ -217,10 +217,15 @@ class RequestsUtils():
         retry_time = self.get_retry_time()
         while True:
             retry_time -= 1
-            r = requests_util.get_requests(url, request_type='proxy, no cookie')
+            logger.info(f"retry left {retry_time} time(s)")
+            r = requests_util.get_requests(url, request_type='no proxy, cookie')
             try:
+                if r.status_code != 200:
+                    logger.info(f"response status code is {r.status_code}")
+                    return None
                 # request handle v2
                 r_json = json.loads(r.text)
+                logger.info(f"text {r.text},code {r_json['code']}")
                 if r_json['code'] == 406:
                     # 处理代理模式冷启动时，首条需要验证
                     # （虽然我也不知道为什么首条要验证，本质上切换ip都是首条。但是这样做有效）
@@ -234,8 +239,11 @@ class RequestsUtils():
                     break
                 if retry_time <= 0:
                     logger.warning('替换tsv和uuid，或者代理质量较低')
-                    exit()
-            except:
+                    return None
+            except Exception as e:
+                if retry_time <= 0:
+                    logger.warning(f'替换tsv和uuid，或者代理质量较低, {e}')
+                    return None
                 pass
         return r
 

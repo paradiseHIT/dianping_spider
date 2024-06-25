@@ -263,7 +263,7 @@ class Controller():
                 '其他信息': '-'
             })
         # 获取经纬度
-        if spider_config.NEED_LAT_AND_LNG:
+        if spider_config.NEED_LOCATION:
             lat_and_lng = get_lat_and_lng(shop_id)
             each_detail_res.update(lat_and_lng)
         saver.save_data(each_detail_res, 'detail')

@@ -47,6 +47,8 @@ def get_search_map_file(page_source):
     create_dir('./tmp')
     # 返回json映射
     return_file_map = {}
+    global_logger.info("page_source")
+    global_logger.info(page_source)
     # 如果无法在页面信息中解析出字体css文件，说明被反爬或者cookie失效
     try:
         font_base_url = re.findall(' href="(//s3plus.meituan.net/v1/.*?)">', page_source)[0]

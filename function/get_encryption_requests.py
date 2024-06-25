@@ -30,6 +30,7 @@ from utils.cache import cache
 from utils.logger import logger
 from utils.spider_config import spider_config
 from function.detail import Detail
+import re
 
 
 def get_token(shop_url):
@@ -63,7 +64,7 @@ def get_font_msg():
     if cache.search_font_map != {}:
         return cache.search_font_map
     else:
-        Detail().get_detail_font_mapping('H5BIJ8PN64Rmywap')
+        Detail().get_detail_font_mapping('G4p3FXAb8KUjAhkD')
         return cache.search_font_map
 
 
@@ -81,6 +82,7 @@ def get_retry_time():
 
 
 def get_basic_hidden_info(shop_id):
+    logger.info(f"get_basic_hidden_info for {shop_id}")
     """
     获取基础隐藏信息（名称、地址、电话号、cityid）
     @param shop_id:
@@ -97,8 +99,14 @@ def get_basic_hidden_info(shop_id):
           '&partner=150' \
           '&optimusCode=10' \
           '&originUrl=' + str(shop_url)
+    logger.info(f"get_basic_hidden_info for {shop_id}, url is {url}")
 
     r = requests_util.get_request_for_interface(url)
+    if r == None:
+        logger.warning(f"get_basic_hidden_info for {shop_id} failed")
+        return {
+            '店铺id': shop_id,
+        }
     r_json = json.loads(requests_util.replace_json_text(r.text, get_font_msg()))
 
     if r_json['code'] == 200:
@@ -124,6 +132,7 @@ def get_basic_hidden_info(shop_id):
         logger.warning('json响应码异常，尝试更改提pr，或者提issue')
 
 def get_lat_and_lng(shop_id):
+    logger.info(f"get_lat_and_lng for {shop_id}")
     """
     获取店铺经纬度(glat, glng)
     @param shop_id:
@@ -154,6 +163,7 @@ def get_lat_and_lng(shop_id):
         logger.warning('json响应码异常，尝试更改提pr，或者提issue')
 
 def get_review_and_star(shop_id):
+    logger.info(f"get_review_and_star for {shop_id}")
     """
     获取评分、人均，评论数
     @param shop_id:
@@ -161,10 +171,29 @@ def get_review_and_star(shop_id):
     """
     assert len(shop_id) == len('H2noKWCDigM0H9c1')
     shop_url = get_shop_url(shop_id)
+    r = requests_util.get_requests(shop_url, request_type='no proxy, cookie')
+    if r.status_code == 403:
+            r = requests_util.get_requests(shop_url, request_type='no proxy, cookie')
+            if r.status_code == 403:
+                logger.error('使用代理吧小伙汁')
+                exit()
+    text = r.text
+    # 网页里面正则匹配获取mainCategoryId和shopCityId
+    match = re.search(r"mainCategoryId:\s*(\d+)", text)
+    if match:
+        main_category_id_value = match.group(1)
+    else:
+        main_category_id_value = ""
+    match = re.search(r"shopCityId:\s*(\d+)", text)
+    if match:
+        shop_city_id = match.group(1)
+    else:
+        shop_city_id = ""
+
     url = 'http://www.dianping.com/ajax/json/shopDynamic/reviewAndStar?' \
           'shopId=' + str(shop_id) + \
-          '&cityId=19' \
-          '&mainCategoryId=2821' \
+          '&cityId='+ str(shop_city_id) + \
+          '&mainCategoryId=' + str(main_category_id_value) + \
           '&_token=' + str(get_token(shop_url)) + \
           '&uuid=' + str(spider_config.UUID) + \
           '&platform=1' \
@@ -173,6 +202,12 @@ def get_review_and_star(shop_id):
           '&originUrl=' + shop_url
 
     r = requests_util.get_request_for_interface(url)
+    logger.info(f"get_review_and_star for {shop_id}, url {url}")
+    if r == None:
+        return {
+            '店铺id': shop_id,
+        }
+    
     r_json = json.loads(requests_util.replace_json_text(r.text, get_font_msg()))
 
     if r_json['code'] == 200:
@@ -184,6 +219,7 @@ def get_review_and_star(shop_id):
         avg_price = BeautifulSoup(r_json['avgPrice'], 'lxml').text
         review_count = BeautifulSoup(r_json['defaultReviewCount'], 'lxml').text
         score_list = []
+        if r_json['shopRefinedScoreValueList'] !
         for each in r_json['shopRefinedScoreValueList']:
             score_list.append(BeautifulSoup(each, 'lxml').text)
         scores = {}

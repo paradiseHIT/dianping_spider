@@ -27,6 +27,7 @@ from utils.get_font_map import get_search_map_file
 from utils.requests_utils import requests_util
 from utils.logger import logger
 from utils.spider_config import spider_config
+import re
 
 
 class Detail():
@@ -40,7 +41,7 @@ class Detail():
         @return:
         """
         url = 'http://www.dianping.com/shop/' + str(shop_id)
-        r = requests_util.get_requests(url, request_type='proxy, no cookie')
+        r = requests_util.get_requests(url, request_type='no proxy, cookie')
         # 对于部分敏感ip（比如我的ip，淦！）可能需要带cookie才允许访问
         # request handle v2
         if r.status_code == 403:
@@ -49,6 +50,19 @@ class Detail():
                 logger.error('使用代理吧小伙汁')
                 exit()
         text = r.text
+        # 网页里面正则匹配获取mainCategoryId和shopCityId
+        match = re.search(r"mainCategoryId:\s*(\d+)", text)
+        if match:
+            main_category_id_value = match.group(1)
+        else:
+            main_category_id_value = ""
+        match = re.search(r"shopCityId:\s*(\d+)", text)
+        if match:
+            shop_city_id = match.group(1)
+        else:
+            shop_city_id = ""
+        logger.info(f"main_category_id_value {main_category_id_value}")
+        logger.info(f"shop_city_id {shop_city_id}")
         file_map = get_search_map_file(text)
         cache.search_font_map = file_map
         return file_map
@@ -75,10 +89,26 @@ class Detail():
             return self.get_detail(shop_id=shop_id, request_type=request_type, last_chance=True)
 
         text = r.text
+        logger.info("get detail text")
+        logger.info(text)
         # 获取加密文件
         file_map = get_search_map_file(text)
         # 替换加密字符串
         text = requests_util.replace_search_html(text, file_map)
+        # 网页里面正则匹配获取mainCategoryId和shopCityId
+        match = re.search(r"mainCategoryId:\s*(\d+)", text)
+        if match:
+            main_category_id_value = match.group(1)
+        else:
+            main_category_id_value = ""
+        match = re.search(r"shopCityId:\s*(\d+)", text)
+        if match:
+            shop_city_id = match.group(1)
+        else:
+            shop_city_id = ""
+        logger.info(f"main_category_id_value {main_category_id_value}")
+        logger.info(f"shop_city_id {shop_city_id}")
+        
         # 网页解析
         html = BeautifulSoup(text, 'lxml')
         """
