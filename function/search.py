@@ -54,6 +54,8 @@ class Search():
         text = r.text
         # 获取加密文件
         file_map = get_search_map_file(text)
+        if 'empty' in file_map:
+            return None
         # 替换加密文件
         text = requests_util.replace_search_html(text, file_map)
 

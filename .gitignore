@@ -1,0 +1,6 @@
+*.log.*
+*.log
+nohup.out
+urls
+*.pyc
+tmp

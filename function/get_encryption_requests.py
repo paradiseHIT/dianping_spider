@@ -219,7 +219,14 @@ def get_review_and_star(shop_id):
         avg_price = BeautifulSoup(r_json['avgPrice'], 'lxml').text
         review_count = BeautifulSoup(r_json['defaultReviewCount'], 'lxml').text
         score_list = []
-        if r_json['shopRefinedScoreValueList'] !
+        if 'shopRefinedScoreValueList' not in r_json:
+            return {
+                '店铺id': shop_id,
+                '店铺总分': shop_base_score,
+                '店铺均分': {},
+                '人均价格': avg_price,
+                '评论总数': review_count
+            } 
         for each in r_json['shopRefinedScoreValueList']:
             score_list.append(BeautifulSoup(each, 'lxml').text)
         scores = {}

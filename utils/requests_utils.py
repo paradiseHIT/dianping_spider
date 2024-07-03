@@ -312,16 +312,22 @@ class RequestsUtils():
             # 代理池为空，提取代理
             if len(self.proxy_pool) == 0:
                 proxy_url = spider_config.HTTP_LINK
-                r = requests.get(proxy_url)
-                r_json = r.json()
+                r = requests.get(proxy_url).text
+                logger.info(f"extract proxy {r}")
+
+                # r_json = r.json()
                 # json解析方式替换
                 # for proxy in r_json['Data']:
-                for proxy in r_json:
-                    # 重复添加，多次利用
-                    for _ in range(repeat_nub):
-                        # self.proxy_pool.append([proxy['Ip'], proxy['Port']])
-                        self.proxy_pool.append([proxy['ip'], proxy['port']])
+                # for proxy in r_json:
+                #     # 重复添加，多次利用
+                #     for _ in range(repeat_nub):
+                #         # self.proxy_pool.append([proxy['Ip'], proxy['Port']])
+                self.proxy_pool.append([r.split(":")[0], r.split(":")[1]])
             # 获取ip
+            # proxies = {
+            #     "http": "http://%(user)s:%(pwd)s@%(proxy)s/" % {"user": spider_config.PROXY_USERNAME, "pwd": spider_config.PROXY_PASSWORD, "proxy": proxy_ip},
+            #     "https": "http://%(user)s:%(pwd)s@%(proxy)s/" % {"user": spider_config.PROXY_USERNAME, "pwd": spider_config.PROXY_PASSWORD, "proxy": proxy_ip}
+            # }
             proxies = self.http_proxy_utils(self.proxy_pool[0][0], self.proxy_pool[0][1])
             self.proxy_pool.remove(self.proxy_pool[0])
             return proxies
@@ -341,11 +347,19 @@ class RequestsUtils():
         @param port:
         @return:
         """
-        proxyMeta = "http://%(host)s:%(port)s" % {
+        if spider_config.PROXY_USERNAME and spider_config.PROXY_PASSWORD != "":
+            proxyMeta = "http://%(user)s:%(pwd)s@%(host)s:%(port)s" % {
+                "host": ip,
+                "port": port,
+                "user": spider_config.PROXY_USERNAME,
+                "pwd": spider_config.PROXY_PASSWORD,
+            }
+        else:
+            proxyMeta = "http://%(host)s:%(port)s" % {
 
-            "host": ip,
-            "port": port,
-        }
+                "host": ip,
+                "port": port,
+            }
 
         proxies = {
 
