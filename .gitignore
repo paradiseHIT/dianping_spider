@@ -4,3 +4,4 @@ nohup.out
 urls
 *.pyc
 tmp
+text_proxy.py
