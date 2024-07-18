@@ -107,7 +107,8 @@
 |channel_id      |频道id，具体格式参照config.ini提示。  |
 |search_url      |搜索url，详见config.ini内提示。  |
 |need_first      |是否只需要首页首条  |
-|need_pages      |需要搜索的页数（搜索页）  |
+|max_pages      |需要搜索的最大页数（搜索页）  |
+|groups      |分组信息，类似g2926，g20045
 |proxy:      |  |
 |use_proxy |是否使用代理 |
 |repeat_nub |ip重复次数，详见config.ini |

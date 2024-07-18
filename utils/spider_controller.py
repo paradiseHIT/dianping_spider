@@ -66,7 +66,7 @@ class Controller():
         #       本着稀释同类型访问频率的原则，暂时采用爬一段详情一段
         # 调用搜索
         for group in tqdm(spider_config.GROUPS):
-            for page in tqdm(range(spider_config.START_PAGE, spider_config.NEED_SEARCH_PAGES + spider_config.START_PAGE), desc='搜索页数'):
+            for page in tqdm(range(spider_config.START_PAGE, spider_config.MAX_SEARCH_PAGES), desc='搜索页数'):
                 # 拼凑url
                 search_url, request_type = self.get_search_url(page, group)
                 logger.info(f"query {search_url}")

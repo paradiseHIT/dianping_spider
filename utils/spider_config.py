@@ -55,9 +55,9 @@ class Config():
             self.START_PAGE = 1
         self.NEED_FIRST = True if global_config.getRaw('detail', 'need_first') == 'True' else False
         try:
-            self.NEED_SEARCH_PAGES = int(global_config.getRaw('detail', 'need_pages'))
+            self.MAX_SEARCH_PAGES = int(global_config.getRaw('detail', 'max_pages'))
         except:
-            logger.error('need_pages 必须为整数')
+            logger.error('max_pages 必须为整数')
             exit()
 
         # config 的 proxy
